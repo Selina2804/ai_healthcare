@@ -1,0 +1,85 @@
+/* Reset một số mặc định */
+body,
+html {
+  margin: 0;
+  padding: 0;
+  font-family: "Segoe UI", Roboto, sans-serif;
+  background-color: #f8f9fa;
+  color: #212529;
+}
+
+/* Tiêu đề chính */
+h1 {
+  text-align: center;
+  font-size: 2rem;
+  margin: 1.5rem 0 1rem;
+}
+
+/* Phần video */
+video {
+  display: block;
+  margin: 0 auto;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  max-width: 100%;
+  height: auto;
+  width: 480px;
+}
+
+/* Văn bản cảm xúc */
+#emotion {
+  display: inline-block;
+  font-weight: bold;
+  color: #0d6efd;
+}
+
+/* Khu vực chatbot */
+h2 {
+  text-align: center;
+  margin-top: 2rem;
+  font-size: 1.5rem;
+}
+
+/* Chat input + button */
+#chatInput {
+  display: block;
+  margin: 1rem auto;
+  padding: 0.75rem 1rem;
+  width: 80%;
+  max-width: 500px;
+  border: 1px solid #ced4da;
+  border-radius: 10px;
+  font-size: 1rem;
+  outline: none;
+  transition: border-color 0.3s ease;
+}
+
+#chatInput:focus {
+  border-color: #0d6efd;
+}
+
+button {
+  display: block;
+  margin: 0 auto;
+  padding: 0.6rem 1.2rem;
+  background-color: #0d6efd;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+button:hover {
+  background-color: #0b5ed7;
+}
+
+/* Trả lời */
+#reply {
+  display: block;
+  margin: 1rem auto;
+  text-align: center;
+  font-weight: 500;
+  color: #495057;
+}

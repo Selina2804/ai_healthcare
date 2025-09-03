@@ -1,0 +1,1341 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI Health Care</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <style>
+        html, body {
+    height: 100%;
+    margin: 0;
+}
+
+.card {
+    height: 100vh; /* hoặc dùng 90vh nếu muốn chừa khoảng top */
+    display: flex;
+    flex-direction: column;
+}
+
+#chatBox {
+    flex: 1;
+    overflow-y: auto;
+}
+
+        .main-container {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        
+        .content-row {
+            display: flex;
+            flex: 1;
+            gap: 20px;
+            padding: 20px;
+        }
+        
+        .camera-section {
+            flex: 1;
+            max-width: 50%;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .chat-section {
+            flex: 1;
+            max-width: 50%;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .video-container {
+            position: relative;
+            flex: 1;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            background: #000;
+            min-height: 400px;
+        }
+        
+        #video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .video-controls {
+            margin-top: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .emotion-display {
+            font-size: 1.2rem;
+            padding: 8px 16px;
+            border-radius: 20px;
+            display: inline-block;
+            background: #f8f9fa;
+        }
+        
+        #chatBox {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+        
+        .message-container {
+            margin-bottom: 15px;
+        }
+        
+        .bot-message {
+            position: relative;
+        }
+        
+        .copy-btn {
+            opacity: 0.7;
+            transition: opacity 0.3s;
+            padding: 0.15rem 0.5rem;
+            font-size: 0.75rem;
+        }
+        
+        .bot-message:hover .copy-btn {
+            opacity: 1;
+        }
+        
+        .avatar-selection {
+            display: none;
+            position: absolute;
+            bottom: 60px;
+            left: 10px;
+            background: white;
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            z-index: 100;
+        }
+        
+        .avatar-option {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin: 5px;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+        
+        .avatar-option:hover {
+            border-color: #0d6efd;
+        }
+        
+        @media (max-width: 992px) {
+            .content-row {
+                flex-direction: column;
+            }
+            
+            .camera-section, .chat-section {
+                max-width: 100%;
+            }
+        }
+
+
+        /* Thêm vào phần style */
+.warning-popup {
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: translate(-50%, -50%) scale(1); }
+    50% { transform: translate(-50%, -50%) scale(1.05); }
+    100% { transform: translate(-50%, -50%) scale(1); }
+}
+
+
+.kidney-question {
+    border-left: 4px solid #0d6efd;
+    padding-left: 10px;
+    margin-bottom: 15px;
+}
+
+.kidney-risk-high {
+    animation: pulse 1.5s infinite;
+    background-color: #ffcccc;
+}
+
+.kidney-risk-low {
+    background-color: #ccffcc;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+/* Thêm vào phần style hiện có */
+
+/* CSS cho phần câu hỏi bệnh thận */
+.kidney-question-container {
+    background: #f8f9fa;
+    border-radius: 10px;
+    padding: 15px;
+    margin-bottom: 15px;
+    border-left: 4px solid #0d6efd;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    transition: all 0.3s ease;
+}
+
+.kidney-question-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.question-number-badge {
+    background: #0d6efd;
+    color: white;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: bold;
+}
+
+.question-text {
+    font-weight: 500;
+    margin-bottom: 15px;
+    color: #212529;
+}
+
+.answer-options {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 5px;
+}
+
+.btn-answer {
+    flex: 1;
+    padding: 8px 0;
+    border-radius: 8px;
+    font-weight: 500;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-answer:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+}
+
+.btn-yes {
+    background-color: rgba(25, 135, 84, 0.1);
+    color: #198754;
+    border: 2px solid #198754;
+}
+
+.btn-no {
+    background-color: rgba(220, 53, 69, 0.1);
+    color: #dc3545;
+    border: 2px solid #dc3545;
+}
+
+.btn-yes.selected {
+    background-color: #198754;
+    color: white;
+    border-color: #198754;
+}
+
+.btn-no.selected {
+    background-color: #dc3545;
+    color: white;
+    border-color: #dc3545;
+}
+
+.btn-answer i {
+    margin-right: 5px;
+}
+
+.selected-answer-feedback {
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    margin-top: 8px;
+}
+
+.feedback-yes {
+    background-color: #e6ffed;
+    color: #198754;
+}
+
+.feedback-no {
+    background-color: #ffebeb;
+    color: #dc3545;
+}
+
+.current-question {
+    box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.2);
+    background: #e7f1ff;
+}
+
+.answered-question {
+    opacity: 0.85;
+    border-left-color: #6c757d;
+}
+
+/* Hiệu ứng khi chọn */
+.btn-answer:active {
+    transform: scale(0.98);
+}
+
+/* Hiệu ứng ripple khi click */
+.btn-answer::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 5px;
+    height: 5px;
+    background: rgba(255, 255, 255, 0.5);
+    opacity: 0;
+    border-radius: 100%;
+    transform: scale(1, 1) translate(-50%, -50%);
+    transform-origin: 50% 50%;
+}
+
+.btn-answer:focus:not(:active)::after {
+    animation: ripple 0.6s ease-out;
+}
+
+@keyframes ripple {
+    0% {
+        transform: scale(0, 0);
+        opacity: 0.5;
+    }
+    100% {
+        transform: scale(20, 20);
+        opacity: 0;
+    }
+}
+    </style>
+
+    <style>
+    /* Thêm vào phần style hiện có */
+    .avatar-option i.fa-plus {
+        font-size: 1.2rem;
+        color: #6c757d;
+    }
+    
+    .avatar-option:hover i.fa-plus {
+        color: #0d6efd;
+    }
+    
+    .medical-report-container {
+        display: none;
+        position: absolute;
+        bottom: 60px;
+        left: 10px;
+        background: white;
+        padding: 15px;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        width: 300px;
+        z-index: 100;
+    }
+    
+    .report-preview {
+        max-width: 100%;
+        max-height: 150px;
+        margin-bottom: 10px;
+        border: 1px dashed #ccc;
+        display: none;
+    }
+    
+    .analyze-btn {
+        margin-top: 10px;
+        width: 100%;
+    }
+</style>
+</head>
+<body class="bg-light">
+    <div class="main-container">
+        <!-- Header -->
+        <header class="bg-danger text-white text-center py-3">
+            <h1><i class="fa fa-medkit me-2"></i> AI Health Care</h1>
+        </header>
+
+        <!-- Main Content -->
+        <div class="content-row container-fluid">
+            <!-- Camera Section -->
+            <div class="camera-section">
+                <div class="video-container">
+                    <video id="video" autoplay playsinline class="w-100"></video>
+                </div>
+                
+                <div class="video-controls">
+                    <button id="toggleEmotionBtn"
+            class="btn btn-warning mb-2 ms-2"
+            onclick="toggleEmotion()">
+        <i class="fas fa-eye-slash me-1"></i> Tắt nhận diện cảm xúc
+    </button>
+                    <div>
+                        <h5 class="mb-2">Chức năng phân tích</h5>
+                        <select id="modeSelector" class="form-select" onchange="changeMode()">
+                            <option value="">-- Chọn chức năng --</option>
+                            <option value="posture">🪑 Kiểm tra tư thế ngồi</option>
+                            <option value="fall">🚨 Dự đoán té ngã</option>
+                            <option value="kidney">🧬 Phân tích nguy cơ bệnh thận</option>
+                        </select>
+                    </div>
+                    
+                    <div class="text-end">
+                        <button id="toggleBtn" class="btn btn-danger mb-2" onclick="toggleCamera()">
+                            <i class="fas fa-video me-1"></i> Bật Camera
+                        </button>
+                        <div>
+                            <span id="status" class="badge bg-secondary">Chưa bật camera</span>
+                            <span id="emotion" class="emotion-display">Đang chờ...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chatbot Section -->
+            <div class="chat-section h-100">
+                <div class="card shadow-sm h-100">
+                    <div class="card-header d-flex justify-content-between align-items-center p-3 bg-danger text-white">
+                        <h5 class="mb-0">
+                            <i class="fa fa-comments mx-2"></i>Trợ lý AI
+                        </h5>
+                        <span class="badge bg-light text-primary">Online</span>
+                    </div>
+
+                 <div id="chatBox" class="card-body overflow-auto" style="max-height: 400px;">
+
+                        <!-- Welcome message -->
+                        <div class="d-flex flex-row justify-content-start mb-4 message-container">
+                            <img src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-chat/ava3-bg.webp"
+                                alt="bot avatar" style="width: 45px; height: 100%" />
+                            <div class="bot-message">
+                                <div>
+                                    <p class="small p-2 ms-3 mb-1 rounded-3 bg-light">
+                                        Xin chào! Tôi là trợ lý AI có thể nhận diện cảm xúc của bạn và hỗ trợ tư vấn sức khỏe.<br/>
+                                        <strong>Ví dụ:</strong>
+                                        <ul class="mb-1">
+                                            <li>Tôi bị đau đầu, phải làm sao?</li>
+                                            <li>Gợi ý thực đơn cho người bị tiểu đường</li>
+                                            <li>Cách cải thiện giấc ngủ?</li>
+                                            <li>Tôi bị cao huyết áp, nên ăn gì?</li>
+                                        </ul>
+                                    </p>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <p class="small ms-3 mb-0 rounded-3 text-muted">
+                                            <i class="far fa-clock me-1"></i> Vừa xong
+                                        </p>
+                                        <button class="copy-btn btn btn-sm btn-outline-secondary me-3" onclick="copyBotMessage(this)">
+                                            <i class="fas fa-copy"></i> Sao chép
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card-footer d-flex align-items-center p-3 bg-white position-relative">
+                    <div class="avatar-btn" onclick="toggleAvatarSelection()">
+                            <img id="userAvatar" src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-chat/ava4-bg.webp"
+                                alt="user avatar" class="rounded-circle me-2" style="width: 40px; height: 40px" />
+                            <div id="avatarSelection" class="avatar-selection">
+                                <p class="small mb-2">Chọn avatar:</p>
+                                <img src="https://w7.pngwing.com/pngs/340/946/png-transparent-avatar-user-computer-icons-software-developer-avatar-child-face-heroes-thumbnail.png"
+                                    alt="Nam" class="avatar-option" onclick="selectAvatar(this, 'Nam')" />
+                                <img src="https://images.icon-icons.com/3708/PNG/512/girl_female_woman_person_people_avatar_icon_230018.png"
+                                    alt="Nữ" class="avatar-option" onclick="selectAvatar(this, 'Nữ')" />
+                            </div>
+                        </div>
+                                              <div id="uploadAvatar" class="avatar-option" onclick="document.getElementById('fileInput').click()" style="display: flex; align-items: center; justify-content: center;">
+    <i class="fas fa-plus"></i>
+</div>
+<input type="file" id="fileInput" accept="image/*" style="display: none;" onchange="handleFileUpload(this.files)">
+    
+                        <input type="text" id="chatInput" class="form-control form-control-lg mx-2"
+                            placeholder="Nhập câu hỏi..." onkeypress="handleKeyPress(event)" />
+                        <button class="btn btn-success rounded-circle" onclick="sendMessage()"
+                            style="width: 45px; height: 45px">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // Lưu avatar đã chọn
+        let selectedAvatar = {
+            url: "https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-chat/ava4-bg.webp",
+            gender: "Nam",
+        };
+
+        // Camera and Emotion Detection
+        let emotionInterval;
+        let stream = null;
+let emotionEnabled = true;
+        function startCamera() {
+            const video = document.getElementById("video");
+            const btn = document.getElementById("toggleBtn");
+            const st = document.getElementById("status");
+
+            navigator.mediaDevices.getUserMedia({ video: true })
+                .then((streamObj) => {
+                    stream = streamObj;
+                    video.srcObject = stream;
+                    btn.innerHTML = '<i class="fas fa-video-slash me-1"></i> Tắt Camera';
+                    st.textContent = "Đang hoạt động";
+                    st.className = "badge bg-success";
+
+                    // Start emotion detection
+              if (emotionEnabled && !currentMode) {
+    startEmotionDetection();
+}
+                })
+                .catch((err) => {
+                    console.error("Lỗi camera:", err);
+                    document.getElementById("emotion").textContent = "Lỗi khi mở camera";
+                    st.textContent = "Lỗi camera";
+                    st.className = "badge bg-danger";
+                });
+        }
+
+        function startEmotionDetection() {
+            
+            if (!emotionEnabled) return;
+            const video  = document.getElementById("video");
+            const canvas = document.createElement("canvas");
+            const ctx = canvas.getContext("2d");
+
+            emotionInterval = setInterval(() => {
+                if (video.readyState === video.HAVE_ENOUGH_DATA) {
+                    canvas.width = video.videoWidth;
+                    canvas.height = video.videoHeight;
+                    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+                    const imageData = canvas.toDataURL("image/jpeg", 0.8);
+
+                    // Send to server for emotion detection
+                    fetch("/process_frame", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ image: imageData }),
+                    })
+                        .then((response) => response.json())
+                        .then((data) => {
+                            const emotionElement = document.getElementById("emotion");
+                            if (data.emotion.includes("Không nhìn thấy")) {
+                                emotionElement.textContent = "🚫 " + data.emotion;
+                                emotionElement.className = "emotion-display text-danger";
+                            } else {
+                                emotionElement.textContent = "😊 " + data.emotion;
+                                emotionElement.className = "emotion-display text-success";
+                            }
+                        })
+                        .catch((error) => {
+                            console.error("Lỗi phân tích cảm xúc:", error);
+                        });
+                }
+            }, 3000); // Check every 3 seconds
+        }
+
+        function toggleCamera() {
+            const video = document.getElementById("video");
+            const btn = document.getElementById("toggleBtn");
+            const st = document.getElementById("status");
+
+            if (stream) {
+                // Tắt camera
+                stream.getTracks().forEach((track) => track.stop());
+                stream = null;
+                video.srcObject = null;
+                clearInterval(emotionInterval);
+                btn.innerHTML = '<i class="fas fa-video me-1"></i> Bật Camera';
+                st.textContent = "Camera đã tắt";
+                st.className = "badge bg-secondary";
+                document.getElementById("emotion").textContent = "Đang chờ...";
+                document.getElementById("emotion").className = "emotion-display";
+            } else {
+                // Bật camera
+                startCamera();
+            }
+        }
+
+        // Avatar selection functions
+        function toggleAvatarSelection() {
+            const selection = document.getElementById("avatarSelection");
+            selection.style.display = selection.style.display === "block" ? "none" : "block";
+        }
+
+        function selectAvatar(imgElement, gender) {
+            selectedAvatar = {
+                url: imgElement.src,
+                gender: gender,
+            };
+            document.getElementById("userAvatar").src = imgElement.src;
+            document.getElementById("avatarSelection").style.display = "none";
+
+            // Lưu vào localStorage để nhớ lựa chọn
+            localStorage.setItem("userAvatar", JSON.stringify(selectedAvatar));
+        }
+
+        // Load saved avatar from localStorage
+        function loadSavedAvatar() {
+            const savedAvatar = localStorage.getItem("userAvatar");
+            if (savedAvatar) {
+                selectedAvatar = JSON.parse(savedAvatar);
+                document.getElementById("userAvatar").src = selectedAvatar.url;
+            }
+        }
+
+        async function copyBotMessage(button) {
+            try {
+                const messageContainer = button.closest(".bot-message");
+                if (!messageContainer) {
+                    console.error("Message container not found");
+                    return;
+                }
+
+                const clone = messageContainer.cloneNode(true);
+                const copyBtnInClone = clone.querySelector(".copy-btn");
+                if (copyBtnInClone) {
+                    copyBtnInClone.remove();
+                }
+
+                const fullMessage = clone.innerText.trim();
+                const textarea = document.createElement("textarea");
+                textarea.value = fullMessage;
+                textarea.style.position = "fixed";
+                textarea.style.opacity = "0";
+                document.body.appendChild(textarea);
+                textarea.select();
+
+                let copySuccess = false;
+                if (navigator.clipboard) {
+                    try {
+                        await navigator.clipboard.writeText(textarea.value);
+                        copySuccess = true;
+                    } catch (e) {
+                        console.log("Clipboard API failed, falling back");
+                        copySuccess = document.execCommand("copy");
+                    }
+                } else {
+                    copySuccess = document.execCommand("copy");
+                }
+
+                document.body.removeChild(textarea);
+
+                if (copySuccess) {
+                    const originalHTML = button.innerHTML;
+                    button.innerHTML = '<i class="fas fa-check"></i> Đã sao chép!';
+                    button.classList.add("text-success");
+                    setTimeout(() => {
+                        button.innerHTML = originalHTML;
+                        button.classList.remove("text-success");
+                    }, 2000);
+                } else {
+                    showCopyError(button, fullMessage);
+                }
+            } catch (err) {
+                console.error("Copy failed:", err);
+                showCopyError(button);
+            }
+        }
+
+        function showCopyError(button, messageText = '') {
+            const originalHTML = button.innerHTML;
+            button.innerHTML = '<i class="fas fa-times"></i> Lỗi!';
+            button.classList.add('text-danger');
+            
+            setTimeout(() => {
+                button.innerHTML = originalHTML;
+                button.classList.remove('text-danger');
+            }, 2000);
+
+            if (messageText) {
+                prompt('Vui lòng sao chép nội dung sau:', messageText);
+            } else {
+                const messageContainer = button.closest('.bot-message');
+                const content = messageContainer?.querySelector('p')?.textContent || '';
+                prompt('Vui lòng sao chép nội dung sau:', content);
+            }
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === "Enter") {
+                sendMessage();
+            }
+        }
+
+        function sendMessage() {
+            const input = document.getElementById("chatInput");
+            const message = input.value.trim();
+            if (!message) return;
+
+            const chatBox = document.getElementById("chatBox");
+
+            // Add user message
+            const userMsg = `
+                <div class="d-flex flex-row justify-content-end mb-4 pt-1">
+                    <div>
+                        <p class="small p-2 me-3 mb-1 text-white rounded-3 bg-primary">${message}</p>
+                        <p class="small me-3 mb-3 rounded-3 text-muted text-end">
+                            <i class="far fa-clock me-1"></i> ${new Date().toLocaleTimeString()}
+                        </p>
+                    </div>
+                    <img src="${selectedAvatar.url}"
+                        alt="user avatar ${selectedAvatar.gender}" style="width: 45px; height: 100%;">
+                </div>
+            `;
+            chatBox.insertAdjacentHTML("beforeend", userMsg);
+            input.value = "";
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            // Add typing indicator
+            const typingIndicator = `
+                <div class="d-flex flex-row justify-content-start mb-4">
+                    <img src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-chat/ava3-bg.webp"
+                        alt="bot avatar" style="width: 45px; height: 100%;">
+                    <div>
+                        <p class="small p-2 ms-3 mb-1 rounded-3 bg-light">
+                            <i class="fas fa-circle-notch fa-spin me-1"></i> Đang nhập...
+                        </p>
+                    </div>
+                </div>
+            `;
+            chatBox.insertAdjacentHTML("beforeend", typingIndicator);
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            // Get bot response
+            fetch("/chat", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    message: message,
+                    gender: selectedAvatar.gender,
+                }),
+            })
+                .then((response) => response.json())
+                .then((data) => {
+                    // Remove typing indicator
+                    const messages = chatBox.querySelectorAll(".d-flex");
+                    chatBox.removeChild(messages[messages.length - 1]);
+
+                    // Add bot response
+                    const botMsg = `
+                        <div class="d-flex flex-row justify-content-start mb-4 message-container">
+                            <img src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-chat/ava3-bg.webp"
+                                alt="bot avatar" style="width: 45px; height: 100%;">
+                            <div class="bot-message">
+                                <button class="copy-btn btn btn-sm btn-outline-secondary" onclick="copyBotMessage(this)">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                                <div>
+                                    <p class="small p-2 ms-3 mb-1 rounded-3 bg-light">${data.reply}</p>
+                                    <p class="small ms-3 mb-3 rounded-3 text-muted">
+                                        <i class="far fa-clock me-1"></i> ${new Date().toLocaleTimeString()}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    chatBox.insertAdjacentHTML("beforeend", botMsg);
+                    chatBox.scrollTop = chatBox.scrollHeight;
+                })
+                .catch((error) => {
+                    console.error("Lỗi chat:", error);
+                    const messages = chatBox.querySelectorAll(".d-flex");
+                    chatBox.removeChild(messages[messages.length - 1]);
+
+                    const errorMsg = `
+                        <div class="d-flex flex-row justify-content-start mb-4">
+                            <div>
+                                <p class="small p-2 ms-3 mb-1 rounded-3 bg-danger text-white">
+                                    <i class="fas fa-exclamation-triangle me-1"></i> Lỗi kết nối tới chatbot
+                                </p>
+                            </div>
+                        </div>
+                    `;
+                    chatBox.insertAdjacentHTML("beforeend", errorMsg);
+                    chatBox.scrollTop = chatBox.scrollHeight;
+                });
+        }
+
+        // Initialize when page loads
+        window.onload = function () {
+            loadSavedAvatar();
+
+            // Close avatar selection when clicking outside
+            document.addEventListener("click", function (event) {
+                const avatarSelection = document.getElementById("avatarSelection");
+                const avatarBtn = document.querySelector(".avatar-btn");
+
+                if (!avatarBtn.contains(event.target) && !avatarSelection.contains(event.target)) {
+                    avatarSelection.style.display = "none";
+                }
+            });
+        };
+
+        let currentMode = "";
+        let detectionInterval = null;
+
+function changeMode() {
+    currentMode = document.getElementById("modeSelector").value;
+    clearInterval(detectionInterval);
+   if (kidneyAnalysis.inProgress) {
+        kidneyAnalysis.inProgress = false;
+        kidneyAnalysis.processing = false;
+    }
+    // Tắt emotion nếu đang chạy
+    if (emotionInterval) {
+        clearInterval(emotionInterval);
+        emotionInterval = null;
+    }
+
+    if (stream) {
+        startSelectedAnalysis();
+    }
+}
+
+        function startSelectedAnalysis() {
+            const canvas = document.createElement("canvas");
+            const ctx = canvas.getContext("2d");
+            const video = document.getElementById("video");
+
+            detectionInterval = setInterval(() => {
+                if (video.readyState === video.HAVE_ENOUGH_DATA) {
+                    canvas.width = video.videoWidth;
+                    canvas.height = video.videoHeight;
+                    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                    const imageData = canvas.toDataURL("image/jpeg", 0.8);
+
+                    switch (currentMode) {
+                        case "posture":
+                            detectPosture(imageData);
+                            break;
+                        case "fall":
+                            predictFall(imageData);
+                            break;
+                        case "kidney":
+                            analyzeKidneyRisk(imageData);
+                            break;
+                    }
+                }
+            }, 3000);
+        }
+
+function detectPosture(imageData) {
+    fetch("/check_posture", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ image: imageData }),
+    })
+        .then(res => res.json())
+        .then(data => {
+            const emotionElement = document.getElementById("emotion");
+            if (data.correct) {
+                emotionElement.textContent = "✅ Tư thế đúng";
+                emotionElement.className = "emotion-display text-success";
+                alreadyWarned.posture = false; // Reset cảnh báo nếu tư thế đúng
+            } else {
+                emotionElement.textContent = "❌ Tư thế sai";
+                emotionElement.className = "emotion-display text-danger";
+                if (!alreadyWarned.posture) {
+                    alreadyWarned.posture = true;
+
+                    sendBotAlert(`Bạn đang ngồi sai tư thế. Vui lòng điều chỉnh như sau:<br>
+                        <ul>
+                            <li>Giữ cơ thể thư giãn, vai thả lỏng</li>
+                            <li>Khuỷu tay tạo thành hình chữ L</li>
+                            <li>Cẳng tay và đầu gối song song với mặt sàn</li>
+                            <li>Không bắt chéo chân</li>
+                            <li>Ngồi thẳng lưng, không gồng cổ</li>
+                            <li>Giữ khoảng cách giữa đầu gối và ghế</li>
+                            <li>Chỉnh độ cao ghế phù hợp</li>
+                            <li>Tựa lưng đúng cách</li>
+                            <li>Đứng lên vận động sau mỗi 1 giờ</li>
+                        </ul>`);
+                }
+            }
+        });
+}
+
+
+function translatePosture(orientation) {
+    const translations = {
+        'standing': 'Đứng',
+        'sitting': 'Ngồi',
+        'lying': 'Nằm',
+        'unknown': 'Không rõ'
+    };
+    return translations[orientation] || orientation;
+}
+
+function showWarningPopup(message) {
+    // Tạo popup cảnh báo
+    const popup = document.createElement('div');
+    popup.className = 'position-fixed top-50 start-50 translate-middle p-4 bg-danger text-white rounded shadow-lg';
+    popup.style.zIndex = '2000';
+    popup.style.maxWidth = '80%';
+    popup.innerHTML = `
+        <h4 class="mb-3"><i class="fas fa-exclamation-triangle me-2"></i>CẢNH BÁO!</h4>
+        <p>${message}</p>
+        <button class="btn btn-light w-100 mt-2" onclick="this.parentElement.remove()">
+            Đã hiểu
+        </button>
+    `;
+    
+    document.body.appendChild(popup);
+    
+    // Tự động ẩn sau 10 giây
+    setTimeout(() => {
+        if (popup.parentNode) popup.remove();
+    }, 10000);
+}
+
+function playWarningSound() {
+    const audio = new Audio('https://assets.mixkit.co/sfx/preview/mixkit-alarm-digital-clock-beep-989.mp3');
+    audio.volume = 0.3;
+    audio.play().catch(e => console.log("Không thể phát âm thanh:", e));
+}
+
+
+let kidneyAnalysis = {
+    inProgress: false,
+    currentQuestion: 0,
+    answers: [],
+    initialRisk: 0,
+    questions: [], // Lưu trữ danh sách câu hỏi
+    processing: false // Tránh xử lý chồng chéo
+};
+
+function analyzeKidneyRisk(imageData) {
+    // Nếu đang trong quá trình phân tích thì không xử lý tiếp
+    if (kidneyAnalysis.processing) return;
+    
+    kidneyAnalysis.processing = true;
+    
+    fetch("/analyze_kidney", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ image: imageData }),
+    })
+    .then(res => res.json())
+    .then(data => {
+        const risk = data.risk_score;
+        const element = document.getElementById("emotion");
+        
+        // Chỉ khởi tạo nếu chưa có quá trình nào đang chạy
+        if (!kidneyAnalysis.inProgress) {
+            kidneyAnalysis.initialRisk = risk;
+            kidneyAnalysis.inProgress = true;
+            kidneyAnalysis.currentQuestion = 0;
+            kidneyAnalysis.answers = [];
+            
+            element.textContent = `🔍 Nguy cơ ban đầu: ${Math.round(risk * 100)}%`;
+            element.className = "emotion-display text-warning";
+            
+            // Lấy danh sách câu hỏi một lần duy nhất
+            fetchKidneyQuestions();
+        }
+        
+        kidneyAnalysis.processing = false;
+    })
+    .catch(err => {
+        console.error("Lỗi phân tích thận:", err);
+        kidneyAnalysis.processing = false;
+    });
+}
+
+function fetchKidneyQuestions() {
+    fetch("/get_kidney_questions")
+    .then(res => res.json())
+    .then(questions => {
+        kidneyAnalysis.questions = questions;
+        askNextKidneyQuestion();
+    });
+}
+
+function askNextKidneyQuestion() {
+    // Kiểm tra điều kiện dừng
+    if (!kidneyAnalysis.inProgress || 
+        kidneyAnalysis.currentQuestion >= kidneyAnalysis.questions.length) {
+        finishKidneyAnalysis();
+        return;
+    }
+    
+    // Ẩn trạng thái "current" của tất cả câu hỏi
+    document.querySelectorAll('.kidney-question').forEach(q => {
+        q.classList.remove('kidney-question-current');
+    });
+    
+    // Hiển thị câu hỏi hiện tại
+    const question = kidneyAnalysis.questions[kidneyAnalysis.currentQuestion];
+    showKidneyQuestion(question);
+    
+    // Đánh dấu câu hỏi hiện tại
+    const currentQuestionElement = document.getElementById(`kidney-q-${question.key}`);
+    if (currentQuestionElement) {
+        currentQuestionElement.classList.add('kidney-question-current');
+    }
+}
+function showKidneyQuestion(question) {
+    const chatBox = document.getElementById("chatBox");
+    
+    // Kiểm tra xem câu hỏi đã được hiển thị chưa
+    const existingQuestions = chatBox.querySelectorAll('.kidney-question');
+    if (existingQuestions.length > kidneyAnalysis.currentQuestion) {
+        return; // Câu hỏi đã được hiển thị rồi
+    }
+    
+    const questionHTML = `
+        <div class="d-flex flex-row justify-content-start mb-4 kidney-question">
+            <img src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-chat/ava3-bg.webp"
+                alt="bot avatar" style="width: 45px; height: 100%;">
+            <div>
+                <p class="small p-2 ms-3 mb-1 rounded-3 bg-light">
+                    <strong>Câu hỏi ${kidneyAnalysis.currentQuestion + 1}/${kidneyAnalysis.questions.length}:</strong> 
+                    ${question.question}
+                </p>
+                <div class="d-flex ms-3 mb-3">
+                    <button class="btn btn-sm btn-success me-2" 
+                            onclick="answerKidneyQuestion(true, '${question.key}')">
+                        <i class="fas fa-check"></i> Có
+                    </button>
+                    <button class="btn btn-sm btn-danger" 
+                            onclick="answerKidneyQuestion(false, '${question.key}')">
+                        <i class="fas fa-times"></i> Không
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    chatBox.insertAdjacentHTML("beforeend", questionHTML);
+    chatBox.scrollTop = chatBox.scrollHeight;
+}
+
+function answerKidneyQuestion(answer, questionKey) {
+    // Tìm câu hỏi hiện tại
+    const currentQuestion = kidneyAnalysis.questions.find(q => q.key === questionKey);
+    if (!currentQuestion) return;
+    
+    // Lưu câu trả lời
+    kidneyAnalysis.answers.push({
+        key: questionKey,
+        answer: answer,
+        weight: answer ? currentQuestion.weight : 0
+    });
+    
+    // Chuyển sang câu hỏi tiếp theo
+    kidneyAnalysis.currentQuestion++;
+    askNextKidneyQuestion();
+}
+
+function finishKidneyAnalysis() {
+    if (!kidneyAnalysis.inProgress) return;
+    
+    fetch("/evaluate_kidney_risk", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            answers: kidneyAnalysis.answers,
+            initial_risk: kidneyAnalysis.initialRisk
+        }),
+    })
+    .then(res => res.json())
+    .then(data => {
+        const finalRisk = data.final_risk;
+        const conclusion = data.conclusion;
+        
+        const element = document.getElementById("emotion");
+        element.textContent = `🧐 Kết quả: ${Math.round(finalRisk * 100)}% nguy cơ`;
+        element.className = finalRisk >= 0.5 ? "emotion-display text-danger" : "emotion-display text-success";
+        
+        // Hiển thị kết luận
+        sendBotAlert(conclusion);
+        
+        // Reset trạng thái
+        kidneyAnalysis.inProgress = false;
+        kidneyAnalysis.processing = false;
+    })
+    .catch(err => {
+        console.error("Lỗi đánh giá nguy cơ:", err);
+        kidneyAnalysis.inProgress = false;
+        kidneyAnalysis.processing = false;
+    });
+}
+
+        function toggleEmotion() {
+    const btn  = document.getElementById("toggleEmotionBtn");
+    const emoEl = document.getElementById("emotion");
+
+    emotionEnabled = !emotionEnabled;
+
+    if (emotionEnabled) {
+        btn.innerHTML = '<i class="fas fa-eye-slash me-1"></i> Tắt nhận diện cảm xúc';
+        btn.classList.remove("btn-success");
+        btn.classList.add("btn-warning");
+
+        // Nếu camera đang mở mà chưa có interval -> khởi chạy lại
+        if (stream && !emotionInterval) startEmotionDetection();
+    } else {
+        btn.innerHTML = '<i class="fas fa-eye me-1"></i> Bật nhận diện cảm xúc';
+        btn.classList.remove("btn-warning");
+        btn.classList.add("btn-success");
+
+        clearInterval(emotionInterval);
+        emotionInterval = null;
+        emoEl.textContent = "Đã tắt nhận diện cảm xúc";
+        emoEl.className = "emotion-display";
+    }
+}
+let cameraIsRunning = false;
+
+// ⚠️ Thêm biến này ngay sau các biến toàn cục
+let alreadyWarned = {
+    posture: false,
+    fall: false
+};
+
+
+function sendBotAlert(message) {
+    const chatBox = document.getElementById("chatBox");
+
+    const alertHTML = `
+        <div class="d-flex flex-row justify-content-start mb-4 message-container">
+            <img src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-chat/ava3-bg.webp"
+                alt="bot avatar" style="width: 45px; height: 100%;"/>
+            <div class="bot-message">
+                <div>
+                    <p class="small p-2 ms-3 mb-1 rounded-3 bg-warning text-dark">
+                        <strong>⚠️ Cảnh báo:</strong> ${message}
+                    </p>
+                    <p class="small ms-3 mb-3 rounded-3 text-muted">
+                        <i class="far fa-clock me-1"></i> ${new Date().toLocaleTimeString()}
+                    </p>
+                </div>
+            </div>
+        </div>
+    `;
+    chatBox.insertAdjacentHTML("beforeend", alertHTML);
+    chatBox.scrollTop = chatBox.scrollHeight;
+}
+
+function predictFall(imageData) {
+fetch("/predict_fall", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ image: imageData }),
+})
+  .then((res) => res.json())
+  .then((data) => {
+    const emotionElement = document.getElementById("emotion");
+    const risk = data.fall_risk;
+    const warning = data.warning;
+
+    if (risk >= 0.4 || warning) {
+      emotionElement.textContent = warning || `⚠️ Nguy cơ té ngã cao (${risk})`;
+      emotionElement.style.color = "red";
+      sendBotAlert(warning || "⚠️ Phát hiện nguy cơ té ngã!");
+    } else {
+      emotionElement.textContent = `✅ An toàn (${risk})`;
+      emotionElement.style.color = "green";
+    }
+  });
+
+}
+
+function playWarningSound() {
+    const audio = new Audio('https://assets.mixkit.co/sfx/preview/mixkit-alarm-digital-clock-beep-989.mp3');
+    audio.volume = 0.3;
+    audio.play().catch(e => console.log("Không thể phát âm thanh:", e));
+}
+
+
+// Thêm vào phần script
+function handleFileUpload(files) {
+    if (files.length === 0) return;
+    
+    const file = files[0];
+    if (!file.type.match('image.*')) {
+        alert('Vui lòng chọn file ảnh (PNG, JPG, JPEG)');
+        return;
+    }
+    
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        // Hiển thị preview
+       const previewHTML = `
+            <div class="d-flex flex-row justify-content-end mb-4 pt-1">
+                <div>
+                    <p class="small p-2 me-3 mb-1 text-white rounded-3 bg-primary">
+                        Hình ảnh đã tải lên:
+                    </p>
+                    <img src="${e.target.result}" class="img-fluid rounded me-3 mb-2" 
+                         style="max-height: 200px;">
+                    <p class="small me-3 mb-3 rounded-3 text-muted text-end">
+                        <i class="far fa-clock me-1"></i> ${new Date().toLocaleTimeString()}
+                    </p>
+                </div>
+            </div>
+        `;
+        document.getElementById('chatBox').insertAdjacentHTML('beforeend', previewHTML);
+
+        document.getElementById('userAvatar').src = e.target.result;
+        
+        // Ẩn menu chọn avatar
+        document.getElementById('avatarSelection').style.display = 'none';
+        
+        // Gửi ảnh lên server để phân tích
+        analyzeUploadedImage(file);
+    };
+    reader.readAsDataURL(file);
+}
+
+function analyzeUploadedImage(file) {
+    const chatBox = document.getElementById('chatBox');
+    
+    // Hiển thị thông báo đang xử lý
+    const processingMsg = `
+        <div class="d-flex flex-row justify-content-start mb-4">
+            <img src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-chat/ava3-bg.webp"
+                alt="bot avatar" style="width: 45px; height: 100%;">
+            <div>
+                <p class="small p-2 ms-3 mb-1 rounded-3 bg-light">
+                    <i class="fas fa-circle-notch fa-spin me-1"></i> Đang phân tích hình ảnh...
+                </p>
+            </div>
+        </div>
+    `;
+    chatBox.insertAdjacentHTML('beforeend', processingMsg);
+    chatBox.scrollTop = chatBox.scrollHeight;
+    
+    // Gửi ảnh đến server
+    const formData = new FormData();
+    formData.append('image', file);
+    
+    fetch('/analyze_image', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        // Xóa thông báo đang xử lý
+        const messages = chatBox.querySelectorAll('.d-flex');
+        chatBox.removeChild(messages[messages.length - 1]);
+        
+        // Hiển thị kết quả
+        const resultMsg = `
+            <div class="d-flex flex-row justify-content-start mb-4 message-container">
+                <img src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-chat/ava3-bg.webp"
+                    alt="bot avatar" style="width: 45px; height: 100%;">
+                <div class="bot-message">
+                    <div>
+                        <p class="small p-2 ms-3 mb-1 rounded-3 bg-light">
+                            <strong>Kết quả phân tích hình ảnh:</strong><br><br>
+                            ${data.analysis}<br><br>
+                            <small><i>Độ chính xác: ${data.confidence}%</i></small>
+                        </p>
+                        <p class="small ms-3 mb-3 rounded-3 text-muted">
+                            <i class="far fa-clock me-1"></i> ${new Date().toLocaleTimeString()}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        `;
+        chatBox.insertAdjacentHTML('beforeend', resultMsg);
+        chatBox.scrollTop = chatBox.scrollHeight;
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Có lỗi xảy ra khi phân tích hình ảnh');
+    });
+}
+function analyzeMedicalReport() {
+    const preview = document.getElementById('reportPreview');
+    const chatBox = document.getElementById('chatBox');
+    
+    // Hiển thị thông báo đang xử lý
+    const processingMsg = `
+        <div class="d-flex flex-row justify-content-start mb-4">
+            <img src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-chat/ava3-bg.webp"
+                alt="bot avatar" style="width: 45px; height: 100%;">
+            <div>
+                <p class="small p-2 ms-3 mb-1 rounded-3 bg-light">
+                    <i class="fas fa-circle-notch fa-spin me-1"></i> Đang phân tích báo cáo y tế...
+                </p>
+            </div>
+        </div>
+    `;
+    chatBox.insertAdjacentHTML('beforeend', processingMsg);
+    chatBox.scrollTop = chatBox.scrollHeight;
+    
+    // Gửi ảnh đến server để phân tích
+    const formData = new FormData();
+    formData.append('file', document.getElementById('fileInput').files[0]);
+    
+    fetch('/analyze_medical_report', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        // Xóa thông báo đang xử lý
+        const messages = chatBox.querySelectorAll('.d-flex');
+        chatBox.removeChild(messages[messages.length - 1]);
+        
+        // Hiển thị kết quả
+        const resultMsg = `
+            <div class="d-flex flex-row justify-content-start mb-4 message-container">
+                <img src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-chat/ava3-bg.webp"
+                    alt="bot avatar" style="width: 45px; height: 100%;">
+                <div class="bot-message">
+                    <div>
+                        <p class="small p-2 ms-3 mb-1 rounded-3 bg-light">
+                            <strong>Kết quả phân tích báo cáo y tế:</strong><br><br>
+                            ${data.analysis}<br><br>
+                            <small><i>Độ chính xác: ${data.confidence}%</i></small>
+                        </p>
+                        <p class="small ms-3 mb-3 rounded-3 text-muted">
+                            <i class="far fa-clock me-1"></i> ${new Date().toLocaleTimeString()}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        `;
+        chatBox.insertAdjacentHTML('beforeend', resultMsg);
+        chatBox.scrollTop = chatBox.scrollHeight;
+        
+        // Đóng popup
+        document.getElementById('medicalReportContainer').remove();
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Có lỗi xảy ra khi phân tích');
+    });
+}
+
+    </script>
+</body>
+</html>

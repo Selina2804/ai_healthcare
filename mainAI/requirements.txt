@@ -1,0 +1,13 @@
+flask
+flask-cors
+opencv-python
+deepface
+retina-face
+numpy
+tensorflow
+scikit-learn
+google-generativeai
+protobuf==3.20.3
+pandas
+tf-keras
+mediapipe
